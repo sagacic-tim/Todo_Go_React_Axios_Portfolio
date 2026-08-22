@@ -1,0 +1,245 @@
+# .github/workflows/ghcr.yml
+
+name: Build, Test, Push (GHCR) - Todo Axios API
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: ghcr-todo-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  OWNER: sagacic-tim
+  IMAGE_API: todo_axios_api_api
+  IMAGE_WEB: todo_axios_api_web
+
+jobs:
+  test:
+    name: ghcr / test
+    runs-on: ubuntu-24.04
+
+    services:
+      db:
+        image: postgres:17
+        env:
+          POSTGRES_USER: todo
+          POSTGRES_PASSWORD: todo
+          POSTGRES_DB: todo_axios_api
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd="pg_isready -U todo -d todo_axios_api"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+
+      - name: Wait for Postgres
+        run: |
+          set -euxo pipefail
+          until pg_isready --host=localhost --port=5432 --username=todo --dbname=todo_axios_api; do
+            echo "Waiting for Postgres..."
+            sleep 1
+          done
+
+      - name: Build backend
+        working-directory: backend
+        env:
+          DB_USER: todo
+          DB_PASSWORD: todo
+          DB_HOST: localhost
+          DB_PORT: "5432"
+          DB_NAME: todo_axios_api
+        run: |
+          set -euxo pipefail
+          go build ./cmd/server
+
+      - name: Run backend tests
+        working-directory: backend
+        env:
+          DB_USER: todo
+          DB_PASSWORD: todo
+          DB_HOST: localhost
+          DB_PORT: "5432"
+          DB_NAME: todo_axios_api
+        run: |
+          set -euxo pipefail
+          go test ./...
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: |
+          set -euxo pipefail
+          npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          set -euxo pipefail
+          npm run build
+
+  build_and_push:
+    name: ghcr / build_and_push
+    needs: test
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata (api)
+        id: meta_api
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.IMAGE_API }}
+          tags: |
+            type=raw,value=main
+            type=sha,format=short,prefix=sha-
+
+      - name: Docker metadata (web)
+        id: meta_web
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.IMAGE_WEB }}
+          tags: |
+            type=raw,value=main
+            type=sha,format=short,prefix=sha-
+
+      - name: Build and push (api)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.meta_api.outputs.tags }}
+          labels: ${{ steps.meta_api.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push (web)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.meta_web.outputs.tags }}
+          labels: ${{ steps.meta_web.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: deploy / vps
+    needs: build_and_push
+    runs-on: ubuntu-24.04
+    if: github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          VPS_APP_DIR: ${{ secrets.VPS_APP_DIR }}
+          GHCR_PULL_USER: ${{ secrets.GHCR_PULL_USER }}
+          GHCR_PULL_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
+          port: 22
+          timeout: 120s
+          command_timeout: 15m
+          envs: VPS_APP_DIR,GHCR_PULL_USER,GHCR_PULL_TOKEN
+          script: |
+            set -euo pipefail
+
+            APP_DIR="${VPS_APP_DIR:-/opt/todo_axios_api}"
+            cd "$APP_DIR"
+
+            export DOCKER_CONFIG="$(mktemp -d)"
+            cleanup() {
+              docker logout ghcr.io >/dev/null 2>&1 || true
+              rm -rf "$DOCKER_CONFIG"
+            }
+            trap cleanup EXIT
+
+            if [[ -n "${GHCR_PULL_USER:-}" && -n "${GHCR_PULL_TOKEN:-}" ]]; then
+              echo "$GHCR_PULL_TOKEN" | docker login ghcr.io -u "$GHCR_PULL_USER" --password-stdin
+            else
+              echo "ERROR: Missing GHCR_PULL_USER or GHCR_PULL_TOKEN." >&2
+              exit 1
+            fi
+
+            docker compose pull
+            docker compose up -d --remove-orphans
+
+            for i in $(seq 1 90); do
+              if curl -fsS http://127.0.0.1:8081/api/health >/dev/null; then
+                echo "API healthcheck OK"
+                api_ok=1
+                break
+              fi
+              echo "Waiting for API... ($i/90)"
+              sleep 2
+            done
+
+            if [[ "${api_ok:-0}" != "1" ]]; then
+              echo "ERROR: API healthcheck failed." >&2
+              docker compose ps || true
+              docker compose logs --tail=200 api || true
+              exit 1
+            fi
+
+            for i in $(seq 1 90); do
+              if curl -fsS http://127.0.0.1:8082/ >/dev/null; then
+                echo "Web healthcheck OK"
+                web_ok=1
+                break
+              fi
+              echo "Waiting for Web... ($i/90)"
+              sleep 2
+            done
+
+            if [[ "${web_ok:-0}" != "1" ]]; then
+              echo "ERROR: Web healthcheck failed." >&2
+              docker compose ps || true
+              docker compose logs --tail=200 web || true
+              exit 1
+            fi
+
+            docker image prune -af --filter "until=168h" || true

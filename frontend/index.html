@@ -1,0 +1,45 @@
+<!-- frontend/public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!--
+      Content-Security-Policy (client-side layer — the server header is authoritative).
+      This meta tag provides defence-in-depth for browsers that strip headers
+      when serving the HTML file directly from disk during development.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
+        default-src 'self';
+        script-src  'self';
+        style-src   'self' 'unsafe-inline';
+        img-src     'self' data:;
+        font-src    'self';
+        connect-src 'self';
+        frame-ancestors 'none';
+        base-uri    'self';
+        form-action 'self'
+      "
+    />
+
+    <!-- Prevent browsers from sending referrer path/query to other origins -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+    <!-- Opt out of Google's FLoC / Topics interest-tracking API -->
+    <meta http-equiv="Permissions-Policy" content="interest-cohort=()" />
+
+    <!-- Icons -->
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png" />
+
+    <title>Groovey Task Manager</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

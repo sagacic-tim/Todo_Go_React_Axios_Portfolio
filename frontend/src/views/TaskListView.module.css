@@ -1,0 +1,115 @@
+/* src/views/TaskListView.module.css */
+
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+.heading {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  color: var(--color-foreground, #1a1a2e);
+}
+
+/* ── Status messages ─────────────────────────────────────────── */
+.status {
+  color: hsl(240, 10%, 50%);
+  font-size: 1rem;
+}
+
+.statusError {
+  color: var(--color-alert, hsl(15, 100%, 40%));
+  font-size: 1rem;
+}
+
+/* ── Responsive grid ─────────────────────────────────────────── */
+.grid {
+  display: grid;
+  gap: 1rem;
+
+  /* laptop: 2 columns */
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* tablet */
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* mobile */
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Task card ───────────────────────────────────────────────── */
+.card {
+  border: 1px solid hsl(240, 15%, 85%);
+  border-radius: 6px;
+  padding: 0.85rem 1rem;
+  background: #fff;
+  border-left-width: 4px;
+}
+
+/* State-based left-border colours */
+.card.scheduled   { border-left-color: hsl(240, 60%, 55%); }
+.card.rescheduled { border-left-color: hsl(35,  90%, 50%); }
+.card.completed   { border-left-color: hsl(145, 55%, 45%); }
+.card.dismissed   { border-left-color: hsl(0,   0%,  65%); }
+.card.delinquent  { border-left-color: hsl(0,   75%, 50%); }
+
+/* ── First paragraph: meta line ──────────────────────────────── */
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin: 0 0 0.45rem;
+  font-size: 0.9rem;
+}
+
+.dueDate {
+  font-weight: 600;
+  color: hsl(240, 10%, 35%);
+  white-space: nowrap;
+}
+
+.separator {
+  color: hsl(240, 10%, 65%);
+}
+
+.title {
+  font-weight: 700;
+  color: var(--color-foreground, #1a1a2e);
+  font-size: 1rem;
+}
+
+.state {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* State badge colours */
+.card.scheduled   .state { background: hsl(240, 60%, 93%); color: hsl(240, 60%, 40%); }
+.card.rescheduled .state { background: hsl(35,  90%, 92%); color: hsl(35,  80%, 35%); }
+.card.completed   .state { background: hsl(145, 55%, 90%); color: hsl(145, 55%, 30%); }
+.card.dismissed   .state { background: hsl(0,   0%,  92%); color: hsl(0,   0%,  40%); }
+.card.delinquent  .state { background: hsl(0,   75%, 93%); color: hsl(0,   75%, 35%); }
+
+/* ── Second paragraph: description ──────────────────────────── */
+.description {
+  margin: 0;
+  font-size: 0.9rem;
+  color: hsl(240, 8%, 40%);
+  line-height: 1.5;
+}

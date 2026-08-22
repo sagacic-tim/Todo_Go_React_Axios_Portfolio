@@ -1,0 +1,172 @@
+
+/* TaskArchiveModal.module.css */
+
+/* The modal “card” */
+
+
+.archive-modal {
+  background: white;
+  border-radius: 10px;
+  height: fit-content; max-height: 90vh;
+  left: 50%;
+  overflow-y: auto;
+  padding: 1rem;
+  position: fixed;
+  top: -500px;
+  transform: translateX(-50%);
+  transition: top 0.5s ease;
+  min-width: 480px; max-width: 90vw;
+  z-index: 2000;
+}
+.archive-modal.open {
+  animation: slideInList 0.5s ease forwards;
+  transform: translate(-50%, -50%);/* Apply the sliding animation */
+}
+/* Modal Content Animation (slide in) */
+.archive-modal.hidden {
+  display: none;
+}
+
+/* Keyframe for the slideIn animation */
+@keyframes slideInList {
+  from {top: -500px}
+  to {top: 50%}
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;            /* ← not flex */
+  place-items: center;      /* ← centers both axes */
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid hsl(240,85%,80%);
+  background: hsl(240,70%,70%);
+  border-radius: 50%;
+  color: hsl(240,100%,94%);
+  font-size: 20px;
+  line-height: 1;           /* collapse any leftover inline leading */
+  cursor: pointer;
+  transition: background-color 0.5s;
+  z-index: 4000;
+}
+.close-btn:hover {
+  background-color: hsl(240, 85%, 65%);
+}
+
+/* Header row: title + close button */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid hsl(240, 15%, 90%);
+  padding-bottom: 0.5rem;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+/* Close “✕” */
+.header button {
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+/* Controls row: filters & date-pickers */
+.controls {
+  display: grid;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.statuses {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  align-items: center;
+  justify-content: left;
+  margin-top: 0.5rem;
+}
+
+.controls .statuses select,
+.controls .date-range input[type="date"] {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid hsl(240, 15%, 80%);
+  border-radius: 4px;
+  margin-left: 0.5rem;
+  font: inherit;
+}
+
+.controls .statuses select {
+  display: block;
+}
+
+.controls .date-range {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  align-items: center;
+  margin: 0.5rem 0.0 1.0rem 0.0;
+  justify-items: stretch;
+  padding: 0;
+}
+
+.controls .statuses select label,
+.controls .date-range-selection label {
+margin-left: 0.5rem;
+}
+
+.controls .date-range .date-range-selection {
+justify-self: right;
+}
+
+hr.selections-end {
+margin-bottom: 1.0rem;
+}
+
+/* Task list */
+.taskList {
+list-style: none;
+margin: 0;
+padding: 0;
+}
+
+.taskList li {
+  display: grid;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid hsl(240, 15%, 90%);
+  grid-template-columns: 2fr 1fr 8fr;
+}
+
+.taskList li:last-child {
+  border-bottom: none;
+}
+
+.taskList button {
+  background: none;
+  border: none;
+  color: hsl(240, 50%, 20%);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  padding: 0;
+}
+
+.taskList button:hover {
+  text-decoration: underline;
+}
+
+/* Empty-state text */
+.noTasks {
+  font-style: italic;
+  color: hsl(240, 15%, 50%);
+  padding: 1rem 0;
+  text-align: center;
+}

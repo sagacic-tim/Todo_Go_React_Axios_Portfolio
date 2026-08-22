@@ -1,0 +1,169 @@
+/* src/components/AuthModal.module.css */
+
+/* ── Overlay ─────────────────────────────────────────────────── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+  padding: 1rem;
+}
+
+/* ── Card ────────────────────────────────────────────────────── */
+.card {
+  background: var(--color-background, #fff);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem 2rem 1.75rem;
+  position: relative;
+}
+
+/* ── Close button ────────────────────────────────────────────── */
+.closeBtn {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.25rem;
+  color: var(--color-foreground, #1a1a2e);
+  opacity: 0.5;
+  line-height: 1;
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  transition: opacity 0.15s;
+}
+.closeBtn:hover { opacity: 1; }
+
+/* ── Tabs ────────────────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  border-bottom: 2px solid hsl(240, 10%, 88%);
+  margin-bottom: 1.5rem;
+}
+
+.tab {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 0.5rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: hsl(240, 10%, 55%);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.tab:hover { color: var(--color-foreground, #1a1a2e); }
+.tabActive {
+  color: var(--color-foreground, #1a1a2e);
+  border-bottom-color: var(--color-foreground, #1a1a2e);
+}
+
+/* ── Form ────────────────────────────────────────────────────── */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.label {
+  font-size: 0.825rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: hsl(240, 10%, 40%);
+}
+
+.input {
+  padding: 0.55rem 0.75rem;
+  border: 1.5px solid hsl(240, 10%, 80%);
+  border-radius: var(--border-radius, 4px);
+  font-size: 1rem;
+  color: var(--color-foreground, #1a1a2e);
+  background: hsl(240, 20%, 98%);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+}
+.input:focus {
+  border-color: hsl(240, 40%, 55%);
+  box-shadow: 0 0 0 3px hsl(240, 40%, 92%);
+}
+.inputError {
+  border-color: var(--color-alert, hsl(15, 100%, 40%));
+}
+.inputError:focus {
+  box-shadow: 0 0 0 3px hsl(15, 100%, 90%);
+}
+
+/* ── Error message ───────────────────────────────────────────── */
+.errorMsg {
+  font-size: 0.85rem;
+  color: var(--color-alert, hsl(15, 100%, 40%));
+  margin: 0;
+  padding: 0.4rem 0.6rem;
+  background: hsl(15, 100%, 96%);
+  border-radius: 4px;
+}
+
+/* ── Submit button ───────────────────────────────────────────── */
+.submitBtn {
+  margin-top: 0.25rem;
+  padding: 0.65rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--border-radius, 4px);
+  background: var(--color-foreground, #1a1a2e);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+.submitBtn:hover:not(:disabled) {
+  background: hsl(240, 20%, 25%);
+}
+.submitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Switch link ─────────────────────────────────────────────── */
+.switchText {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: hsl(240, 10%, 50%);
+}
+.switchLink {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: hsl(240, 40%, 50%);
+  font-size: inherit;
+  font-weight: 600;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.switchLink:hover { color: hsl(240, 40%, 35%); }
+
+/* ── Password hint ───────────────────────────────────────────── */
+.hint {
+  font-size: 0.78rem;
+  color: hsl(240, 10%, 60%);
+  margin: 0;
+}

@@ -1,0 +1,7 @@
+ALTER TABLE tasks
+  DROP COLUMN IF EXISTS updated_at,
+  DROP COLUMN IF EXISTS created_at,
+  DROP COLUMN IF EXISTS rescheduled_at,
+  DROP COLUMN IF EXISTS state;
+
+DROP TYPE IF EXISTS tasks_state;
